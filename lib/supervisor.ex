@@ -1,22 +1,17 @@
-defmodule MyDynamicSupervisor do
-  use DynamicSupervisor
+# defmodule MyApp.Supervisor do
+#   # Automatically defines child_spec/1
+#   use Supervisor
 
-  def start_link(args) do
-    DynamicSupervisor.start_link(__MODULE__, args, name: __MODULE__)
-  end
+#   def start_link() do
+#     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
+#   end
 
-  @impl true
-  def init(_) do
-    DynamicSupervisor.init(strategy: :one_for_one)
-  end
+#   @impl true
+#   def init(_init_arg) do
+#     children = [
+#       %{Stack, [:hello]}
+#     ]
 
-  def start_child(id, module, module_fn, module_args) do
-    spec = %{
-      id: id,
-      start: {module, module_fn, module_args},
-      restart: :permanent,
-      type: :worker
-    }
-    DynamicSupervisor.start_child(__MODULE__, spec)
-  end
-end
+#     Supervisor.init(children, strategy: :one_for_one)
+#   end
+# end
