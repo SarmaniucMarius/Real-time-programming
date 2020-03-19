@@ -2,7 +2,8 @@
              [{applications,[kernel,stdlib,elixir,logger,poison,
                              eventsource_ex]},
               {description,"lab1"},
-              {modules,['Elixir.EventProcessor','Elixir.Main',
-                        'Elixir.MyDynamicSupervisor','Elixir.Request']},
+              {modules,['Elixir.Distributor','Elixir.EventProcessor',
+                        'Elixir.Main','Elixir.WorkersSupervisor']},
               {registered,[]},
-              {vsn,"0.1.0"}]}.
+              {vsn,"0.1.0"},
+              {mod,{'Elixir.Main',[[],[]]}}]}.

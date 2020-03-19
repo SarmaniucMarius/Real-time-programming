@@ -1,48 +1,29 @@
 defmodule Main do
-  def start() do
-    {:ok, supervisor_pid} = MyDynamicSupervisor.start_link([])
+  Application
 
-    event_processor_pids = 0..50 |> Enum.map(fn _ ->
-      {:ok, pid} = MyDynamicSupervisor.start_child(
-        EventProcessor,
-        EventProcessor,
-        :start_link,
-        [])
-      pid
-    end) |> List.to_tuple
+  def start(_, _) do
+    children = [
+      %{
+        id: WorkersSupervisor,
+        start: {WorkersSupervisor, :start_link, [[]]},
+        restart: :permanent,
+        type: :supervisor
+      },
+      { Registry, [keys: :unique, name: :workers_registry]},
+      %{
+        id: Distributor,
+        start: {Distributor, :start_link, ["http://localhost:4000/iot"]},
+        restart: :permanent,
+        type: :worker
+      }
+    ]
 
-    {:ok, request_pid} = MyDynamicSupervisor.start_child(
-      Request,
-      Request,
-      :start_link,
-      [supervisor_pid, event_processor_pids]
-    )
-    {:ok, eex_pid} = MyDynamicSupervisor.start_child(
-      EventsourceEx,
-      EventsourceEx,
-      :new,
-      ["http://localhost:4000/iot", [{:stream_to, request_pid}]]
-    )
+    opts = [strategy: :one_for_one, name: MainSupervisor]
+    Supervisor.start_link(children, opts)
 
-    spawn(fn ->
-      Process.monitor(self())
-      receive do
-        msg -> IO.inspect(msg)
-      end
-    end)
-    spawn(fn ->
-      Process.monitor(request_pid)
-      receive do
-        msg -> IO.inspect(msg)
-      end
-    end)
-    spawn(fn ->
-      Process.monitor(eex_pid)
-      receive do
-        msg -> IO.inspect(msg)
-      end
-    end)
+    receive do
+      {:message_type, value} -> # code
+    end
 
-    {:ok, supervisor_pid}
   end
 end
