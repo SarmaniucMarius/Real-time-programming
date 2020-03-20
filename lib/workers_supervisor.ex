@@ -1,7 +1,7 @@
 defmodule WorkersSupervisor do
   use DynamicSupervisor
 
-  def start_link(_) do
+  def start_link do
     IO.puts("Starting workers supervisor")
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
   end

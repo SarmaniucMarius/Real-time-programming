@@ -24,7 +24,7 @@ defmodule EventProcessor do
       weather_avg[:light], weather_avg[:temperature],
       weather_avg[:wind]
     )
-    IO.puts(weather_forcast)
+    # IO.puts(weather_forcast)
 
     {:noreply, name}
   end

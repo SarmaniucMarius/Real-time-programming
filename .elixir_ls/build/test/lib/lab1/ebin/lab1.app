@@ -3,7 +3,8 @@
                              eventsource_ex]},
               {description,"lab1"},
               {modules,['Elixir.Distributor','Elixir.EventProcessor',
-                        'Elixir.Main','Elixir.WorkersSupervisor']},
+                        'Elixir.Main','Elixir.Scheduler',
+                        'Elixir.WorkersSupervisor']},
               {registered,[]},
               {vsn,"0.1.0"},
               {mod,{'Elixir.Main',[[],[]]}}]}.
