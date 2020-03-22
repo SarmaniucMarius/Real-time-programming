@@ -15,8 +15,12 @@ defmodule WorkersSupervisor do
     spec = %{
       id: EventProcessor,
       start: {EventProcessor, :start_link, [name]},
-      type: :worker
+      restart: :temporary
     }
     DynamicSupervisor.start_child(__MODULE__, spec)
+  end
+
+  def delete_child(name) do
+    DynamicSupervisor.terminate_child(__MODULE__, name)
   end
 end

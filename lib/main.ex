@@ -1,26 +1,36 @@
 defmodule Main do
-  Application
+  use Application
 
   def start(_, _) do
     children = [
+      {
+        Registry,
+        [keys: :unique, name: :workers_registry]
+      },
       %{
         id: WorkersSupervisor,
         start: {WorkersSupervisor, :start_link, []},
-        restart: :permanent,
         type: :supervisor
-      },
-      { Registry, [keys: :unique, name: :workers_registry]},
-      %{
-        id: Scheduler,
-        start: {Scheduler, :start_link, [10]},
-        restart: :permanent,
-        type: :worker
       },
       %{
         id: Distributor,
-        start: {Distributor, :start_link, ["http://localhost:4000/iot"]},
-        restart: :permanent,
-        type: :worker
+        start: {Distributor, :start_link, ["http://localhost:4000/iot"]}
+      },
+      %{
+        id: Scheduler,
+        start: {Scheduler, :start_link, [30]}
+      },
+      %{
+        id: Aggregator,
+        start: {Aggregator, :start_link, [500]}
+      },
+      %{
+        id: Printer,
+        start: {Printer, :start_link, []}
+      },
+      %{
+        id: Input,
+        start: {Input, :start_link, []}
       }
     ]
 

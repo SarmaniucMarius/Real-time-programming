@@ -11,22 +11,30 @@ defmodule EventProcessor do
 
   @impl true
   def init(name) do
-    IO.puts("Starting #{name}")
+    # IO.puts("Starting #{name}")
     {:ok, name}
   end
 
   @impl true
   def handle_cast({:process, event}, name) do
     weather_data = Poison.decode!(event)["message"]
-    weather_avg = calc_weather_avg(weather_data)
+    {weather_avg, time_stamp} = calc_weather_avg(weather_data)
     weather_forcast = forcast(
       weather_avg[:pressure], weather_avg[:humidity],
       weather_avg[:light], weather_avg[:temperature],
       weather_avg[:wind]
     )
-    # IO.puts(weather_forcast)
+
+    Aggregator.send_forcast(Aggregator, {weather_forcast, weather_avg, time_stamp})
 
     {:noreply, name}
+  end
+
+  @impl true
+  def terminate(_reason, _state) do
+    # IO.puts("Terminating #{state}")
+  #   Process.send_after(Scheduler, {:start_worker, state}, 10)
+    DynamicSupervisor.terminate_child(WorkersSupervisor, self())
   end
 
   defp calc_weather_avg(data) do
@@ -42,16 +50,19 @@ defmodule EventProcessor do
     temperature_1 = data["temperature_sensor_1"]
     temperature_2 = data["temperature_sensor_2"]
     temperature_avg = avg(temperature_1, temperature_2)
-    _timestamp = data["unix_timestamp_us"]
+    timestamp = data["unix_timestamp_us"] |> DateTime.from_unix(:microsecond) |> elem(1)
     wind_1 = data["wind_speed_sensor_1"]
     wind_2 = data["wind_speed_sensor_2"]
     wind_avg = avg(wind_1, wind_2)
-    %{
-      pressure: pressure_avg,
-      humidity: humidity_avg,
-      light: light_avg,
-      temperature: temperature_avg,
-      wind: wind_avg
+    {
+      %{
+        pressure: pressure_avg,
+        humidity: humidity_avg,
+        light: light_avg,
+        temperature: temperature_avg,
+        wind: wind_avg
+      },
+      timestamp
     }
   end
 
