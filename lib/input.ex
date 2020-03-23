@@ -5,9 +5,18 @@ defmodule Input do
   end
 
   def get_input do
-    new_update_time = IO.gets("") |> String.trim("\n") |> Integer.parse |> elem(0)
+    user_input = IO.gets("")
 
-    :ok = Aggregator.update_time(Aggregator, new_update_time)
+    if user_input === "t\n" do
+      :ok = Printer.set_printable(Printer, false)
+      new_update_time =
+        IO.gets("Introduce forcast update time: ") |>
+        String.trim("\n") |>
+        Integer.parse |>
+        elem(0)
+      :ok = Aggregator.update_time(Aggregator, new_update_time)
+      :ok = Printer.set_printable(Printer, true)
+    end
 
     get_input()
   end

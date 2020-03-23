@@ -49,52 +49,34 @@ defmodule Aggregator do
     sensors_data =
       Enum.filter(state, fn elem -> hd(elem) === forcast end) |>
       Enum.map(fn list -> List.to_tuple(list) end) |>
-      Enum.map(fn tuple -> elem(tuple, 1) end) |> List.to_tuple
-    accumulator = %{
-      humidity: 0,
-      light: 0,
-      pressure: 0,
-      temperature: 0,
-      wind: 0
-    }
-    sensors_data_avg =
-      add_sensors_data(
-        sensors_data,
-        tuple_size(sensors_data)-1,
-        accumulator
-      ) |>
-      Enum.map(fn {sensor, value} ->
-        {sensor, value/tuple_size(sensors_data)}
-      end) |>
-      Enum.into(%{})
+      Enum.map(fn tuple -> elem(tuple, 1) end)
 
-    :ok = Printer.print_forcast(Printer, {forcast, sensors_data_avg, time_stamp})
+    humidity = sum_data(sensors_data, :humidity) / length(sensors_data)
+    light = sum_data(sensors_data, :light) / length(sensors_data)
+    pressure = sum_data(sensors_data, :pressure) / length(sensors_data)
+    temperature = sum_data(sensors_data, :temperature) / length(sensors_data)
+    wind = sum_data(sensors_data, :wind) / length(sensors_data)
+
+    sensors_result = %{
+      humidity: humidity,
+      light: light,
+      pressure: pressure,
+      temperature: temperature,
+      wind: wind
+    }
+
+    :ok =
+      Printer.print_forcast(
+        Printer,
+        {forcast, sensors_result, time_stamp}
+      )
 
     Process.send_after(self(), :calc_forcast, update_time)
     {:noreply, {[], update_time}}
   end
 
-  defp add_sensors_data(data, length, accumulator) do
-    if length >= 0 do
-      sensors_data = elem(data, length)
-
-      humidity = accumulator[:humidity] + sensors_data[:humidity]
-      light = accumulator[:light] + sensors_data[:light]
-      pressure = accumulator[:pressure] + sensors_data[:pressure]
-      temperature = accumulator[:temperature] + sensors_data[:temperature]
-      wind = accumulator[:wind] + sensors_data[:wind]
-
-      result = %{
-        humidity: humidity,
-        light: light,
-        pressure: pressure,
-        temperature: temperature,
-        wind: wind
-      }
-
-      add_sensors_data(data, length-1, result)
-    else
-      accumulator
-    end
+  defp sum_data(sensor_data, key) do
+    Enum.map(sensor_data, fn elem -> elem[key] end) |>
+    Enum.sum
   end
 end
